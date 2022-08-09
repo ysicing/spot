@@ -1,0 +1,22 @@
+qcloud:
+  account:
+    id: <qcloud-SecretId>
+    secret: <qcloud-SecretId>
+  zone: ap-shanghai-5
+  region: ap-shanghai
+  # project:
+  #   id: <项目ID>
+  instance:
+    image: img-id
+    type: SA2.MEDIUM4
+    network:
+      vpc:
+        id: vpc-id
+      subnet:
+        id: subnet-id
+    auth:
+      sshkey:
+        ids: 
+          - sshkey-id 
+    securitygroup:
+      id: sg-id
