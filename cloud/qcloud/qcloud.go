@@ -28,6 +28,7 @@ type Instance struct {
 	InstanceChargeType string
 	InstanceState      string
 	PrivateIpAddresses string
+	PublicIpAddresses  string
 }
 
 func NewClient() *Client {
@@ -46,7 +47,7 @@ func NewClient() *Client {
 	return &Client{client}
 }
 
-func (c *Client) Create(count int64) error {
+func (c *Client) Create(count int64, netaccess bool) error {
 
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := cvm.NewRunInstancesRequest()
@@ -70,9 +71,17 @@ func (c *Client) Create(count int64) error {
 		AsVpcGateway:     common.BoolPtr(false),
 		Ipv6AddressCount: common.Uint64Ptr(0),
 	}
-	request.InternetAccessible = &cvm.InternetAccessible{
-		InternetMaxBandwidthOut: common.Int64Ptr(0),
-		PublicIpAssigned:        common.BoolPtr(false),
+	if count == 1 && netaccess {
+		request.InternetAccessible = &cvm.InternetAccessible{
+			InternetChargeType:      common.StringPtr("TRAFFIC_POSTPAID_BY_HOUR"),
+			InternetMaxBandwidthOut: common.Int64Ptr(100),
+			PublicIpAssigned:        common.BoolPtr(true),
+		}
+	} else {
+		request.InternetAccessible = &cvm.InternetAccessible{
+			InternetMaxBandwidthOut: common.Int64Ptr(0),
+			PublicIpAssigned:        common.BoolPtr(false),
+		}
 	}
 	request.InstanceCount = common.Int64Ptr(int64(count))
 	request.InstanceName = common.StringPtr(fmt.Sprintf("spot-%s", time.Now().Format("20060102150405")))
@@ -136,6 +145,10 @@ func (c *Client) List() ([]Instance, error) {
 			if len(i.PrivateIpAddresses) != 0 {
 				ip = *i.PrivateIpAddresses[0]
 			}
+			eip := ""
+			if len(i.PublicIpAddresses) != 0 {
+				eip = *i.PublicIpAddresses[0]
+			}
 			ins = append(ins, Instance{
 				CreatedTime:        *i.CreatedTime,
 				InstanceId:         *i.InstanceId,
@@ -144,6 +157,7 @@ func (c *Client) List() ([]Instance, error) {
 				InstanceChargeType: *i.InstanceChargeType,
 				InstanceState:      *i.InstanceState,
 				PrivateIpAddresses: ip,
+				PublicIpAddresses:  eip,
 			})
 		}
 	}
@@ -156,9 +170,9 @@ func (c *Client) Show() error {
 		return err
 	}
 	table := uitable.New()
-	table.AddRow("创建时间", "Name", "ID", "IP", "规格", "类型", "状态")
+	table.AddRow("创建时间", "Name", "ID", "内网IP", "公网IP", "规格", "类型", "状态")
 	for _, i := range list {
-		table.AddRow(i.CreatedTime, i.InstanceName, i.InstanceId, i.PrivateIpAddresses, i.InstanceType, i.InstanceChargeType, i.InstanceState)
+		table.AddRow(i.CreatedTime, i.InstanceName, i.InstanceId, i.PrivateIpAddresses, i.PublicIpAddresses, i.InstanceType, i.InstanceChargeType, i.InstanceState)
 	}
 	return output.EncodeTable(os.Stdout, table)
 }
