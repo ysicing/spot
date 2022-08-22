@@ -23,12 +23,12 @@ type Client struct {
 type Instance struct {
 	CreatedTime        string
 	InstanceName       string
-	InstanceId         string
+	InstanceID         string
 	InstanceType       string
 	InstanceChargeType string
 	InstanceState      string
-	PrivateIpAddresses string
-	PublicIpAddresses  string
+	PrivateIPAddresses string
+	PublicIPAddresses  string
 }
 
 func NewClient() *Client {
@@ -151,13 +151,13 @@ func (c *Client) List() ([]Instance, error) {
 			}
 			ins = append(ins, Instance{
 				CreatedTime:        *i.CreatedTime,
-				InstanceId:         *i.InstanceId,
+				InstanceID:         *i.InstanceId,
 				InstanceName:       *i.InstanceName,
 				InstanceType:       *i.InstanceType,
 				InstanceChargeType: *i.InstanceChargeType,
 				InstanceState:      *i.InstanceState,
-				PrivateIpAddresses: ip,
-				PublicIpAddresses:  eip,
+				PrivateIPAddresses: ip,
+				PublicIPAddresses:  eip,
 			})
 		}
 	}
@@ -172,7 +172,7 @@ func (c *Client) Show() error {
 	table := uitable.New()
 	table.AddRow("创建时间", "Name", "ID", "内网IP", "公网IP", "规格", "类型", "状态")
 	for _, i := range list {
-		table.AddRow(i.CreatedTime, i.InstanceName, i.InstanceId, i.PrivateIpAddresses, i.PublicIpAddresses, i.InstanceType, i.InstanceChargeType, i.InstanceState)
+		table.AddRow(i.CreatedTime, i.InstanceName, i.InstanceID, i.PrivateIPAddresses, i.PublicIPAddresses, i.InstanceType, i.InstanceChargeType, i.InstanceState)
 	}
 	return output.EncodeTable(os.Stdout, table)
 }

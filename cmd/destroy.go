@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"github.com/ysicing/spot/cloud/qcloud"
 	"strings"
+
+	"github.com/ysicing/spot/cloud/qcloud"
 
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
@@ -29,7 +30,7 @@ func cmdDestroy() *cobra.Command {
 				logrus.Info("销毁所有虚拟机")
 				var ids []string
 				for _, vm := range vms {
-					ids = append(ids, vm.InstanceId)
+					ids = append(ids, vm.InstanceID)
 				}
 				return client.Drop(ids)
 			}
@@ -45,7 +46,7 @@ func cmdDestroy() *cobra.Command {
 				Size: 4,
 				Searcher: func(input string, index int) bool {
 					vm := vms[index]
-					name := vm.PrivateIpAddresses
+					name := vm.PrivateIPAddresses
 					return strings.Contains(name, input)
 				},
 			}
@@ -55,7 +56,7 @@ func cmdDestroy() *cobra.Command {
 				return err
 			}
 
-			return client.Drop([]string{vms[i].InstanceId})
+			return client.Drop([]string{vms[i].InstanceID})
 		},
 	}
 	c.Flags().BoolVarP(&all, "all", "a", false, "销毁所有虚拟机")

@@ -1,3 +1,5 @@
 config.yaml
 spotapp
 spot
+
+dist/

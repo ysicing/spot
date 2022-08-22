@@ -7,12 +7,12 @@ import (
 )
 
 func cmdNew() *cobra.Command {
-	var count int64 
+	var count int64
 	var netaccess bool
 	c := &cobra.Command{
-		Use:   "new",
+		Use:     "new",
 		Aliases: []string{"up", "create"},
-		Short: "新建腾讯云虚拟机",
+		Short:   "新建腾讯云虚拟机",
 		RunE: func(c *cobra.Command, args []string) error {
 			client := qcloud.NewClient()
 			return client.Create(count, netaccess)
