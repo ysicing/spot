@@ -1,6 +1,6 @@
 # Spot 竞价机器小助手
 
-![GitHub Workflow Status (event)](https://img.shields.io/github/workflow/status/ysicing/spot/tag?style=flat-square)
+[![Release](https://github.com/ysicing/spot/actions/workflows/release.yml/badge.svg)](https://github.com/ysicing/spot/actions/workflows/release.yml)
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/ysicing/spot?filename=go.mod&style=flat-square)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/w/ysicing/spot?style=flat-square)
 ![GitHub all releases](https://img.shields.io/github/downloads/ysicing/spot/total?style=flat-square)
@@ -30,8 +30,19 @@ brew install spotvm
 ```bash
 echo "deb [trusted=yes] https://debian.ysicing.me/ /" | sudo tee /etc/apt/sources.list.d/ysicing.list
 apt update
-apt-get install -y spot
-spot version
+apt install -y spot
+spot -v
+```
+
+### CentOS安装
+
+```bash
+cat /etc/yum.repos.d/fury.repo
+[fury]
+name=Gemfury Private Repo
+baseurl=https://yum.fury.io/ysicing/
+enabled=1
+gpgcheck=0
 ```
 
 ### 源码编译安装
