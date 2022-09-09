@@ -9,6 +9,7 @@ qcloud:
   instance:
     image: img-id
     type: SA2.MEDIUM4
+    disk: 50
     network:
       vpc:
         id: vpc-id
@@ -16,7 +17,7 @@ qcloud:
         id: subnet-id
     auth:
       sshkey:
-        ids: 
-          - sshkey-id 
+        ids:
+          - sshkey-id
     securitygroup:
       id: sg-id

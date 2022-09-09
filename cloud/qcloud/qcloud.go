@@ -47,7 +47,7 @@ func NewClient() *Client {
 	return &Client{client}
 }
 
-func (c *Client) Create(count int64, netaccess bool) error {
+func (c *Client) Create(count int64, netaccess, windows bool) error {
 
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := cvm.NewRunInstancesRequest()
@@ -61,9 +61,16 @@ func (c *Client) Create(count int64, netaccess bool) error {
 	}
 	request.InstanceType = common.StringPtr(viper.GetString("qcloud.instance.type"))
 	request.ImageId = common.StringPtr(viper.GetString("qcloud.instance.image"))
+	disk := viper.GetInt64("qcloud.instance.disk")
+	if disk == 0 {
+		disk = 50
+	}
+	if windows && disk < 100 {
+		disk = 100
+	}
 	request.SystemDisk = &cvm.SystemDisk{
 		DiskType: common.StringPtr("CLOUD_PREMIUM"),
-		DiskSize: common.Int64Ptr(50),
+		DiskSize: common.Int64Ptr(disk),
 	}
 	request.VirtualPrivateCloud = &cvm.VirtualPrivateCloud{
 		VpcId:            common.StringPtr(viper.GetString("qcloud.instance.network.vpc.id")),
@@ -84,10 +91,18 @@ func (c *Client) Create(count int64, netaccess bool) error {
 		}
 	}
 	request.InstanceCount = common.Int64Ptr(int64(count))
-	request.InstanceName = common.StringPtr(fmt.Sprintf("spot-%s", time.Now().Format("20060102150405")))
-	request.LoginSettings = &cvm.LoginSettings{
-		KeyIds: common.StringPtrs(viper.GetStringSlice("qcloud.instance.auth.sshkey.ids")),
+	namePrefix := "spot"
+	if windows {
+		request.LoginSettings = &cvm.LoginSettings{
+			KeepImageLogin: common.StringPtr("true"),
+		}
+		namePrefix = "spot-windows"
+	} else {
+		request.LoginSettings = &cvm.LoginSettings{
+			KeyIds: common.StringPtrs(viper.GetStringSlice("qcloud.instance.auth.sshkey.ids")),
+		}
 	}
+	request.InstanceName = common.StringPtr(fmt.Sprintf("%s-%s", namePrefix, time.Now().Format("20060102150405")))
 	request.SecurityGroupIds = common.StringPtrs(viper.GetStringSlice("qcloud.instance.securitygroup.ids"))
 	request.EnhancedService = &cvm.EnhancedService{
 		SecurityService: &cvm.RunSecurityServiceEnabled{
@@ -141,11 +156,11 @@ func (c *Client) List() ([]Instance, error) {
 	var ins []Instance
 	for _, i := range response.Response.InstanceSet {
 		if strings.HasPrefix(*i.InstanceName, "spot") {
-			ip := ""
+			ip := "-"
 			if len(i.PrivateIpAddresses) != 0 {
 				ip = *i.PrivateIpAddresses[0]
 			}
-			eip := ""
+			eip := "-"
 			if len(i.PublicIpAddresses) != 0 {
 				eip = *i.PublicIpAddresses[0]
 			}
@@ -185,6 +200,27 @@ func (c *Client) Drop(ids []string) error {
 
 	// 返回的resp是一个TerminateInstancesResponse的实例，与请求对象对应
 	_, err := c.TerminateInstances(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		return fmt.Errorf("tencent api error has returned: %v", err)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) Restart(id string) error {
+	// 实例化一个请求对象,每个接口都会对应一个request对象
+	request := cvm.NewRebootInstancesRequest()
+
+	request.InstanceIds = common.StringPtrs([]string{id})
+	// SOFT 表示软关机
+	// HARD 表示硬关机
+	// SOFT_FIRST 表示优先软关机，失败再执行硬关机
+	request.StopType = common.StringPtr("SOFT_FIRST")
+
+	// 返回的resp是一个RebootInstancesResponse的实例，与请求对象对应
+	_, err := c.RebootInstances(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		return fmt.Errorf("tencent api error has returned: %v", err)
 	}

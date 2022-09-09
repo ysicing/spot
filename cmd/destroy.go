@@ -22,30 +22,35 @@ func cmdDestroy() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if len(vms) == 0 {
+
+			okvms := []qcloud.Instance{}
+			var ids []string
+			for _, vm := range vms {
+				if vm.InstanceState == "RUNNING" {
+					ids = append(ids, vm.InstanceID)
+					okvms = append(okvms, vm)
+				}
+			}
+			if len(okvms) == 0 {
 				logrus.Info("没有可销毁的虚拟机")
 				return nil
 			}
 			if all {
-				logrus.Info("销毁所有虚拟机")
-				var ids []string
-				for _, vm := range vms {
-					ids = append(ids, vm.InstanceID)
-				}
+				logrus.Infof("销毁所有虚拟机, 数目: %d", len(ids))
 				return client.Drop(ids)
 			}
 			prompt := promptui.Select{
 				Label: "选择虚拟机",
-				Items: vms,
+				Items: okvms,
 				Templates: &promptui.SelectTemplates{
 					Label:    "{{ . }}?",
-					Active:   "\U0001F449 {{ .PrivateIpAddresses | cyan }} ({{ .InstanceName | red }})",
-					Inactive: "  {{ .PrivateIpAddresses | cyan }} ({{ .InstanceName | red }})",
-					Selected: "\U0001F389 {{ .PrivateIpAddresses | green }}",
+					Active:   "\U0001F449 {{ .PrivateIPAddresses | cyan }} ({{ .InstanceName | red }})",
+					Inactive: "  {{ .PrivateIPAddresses | cyan }} ({{ .InstanceName | red }})",
+					Selected: "\U0001F389 {{ .PrivateIPAddresses | green }}",
 				},
 				Size: 4,
 				Searcher: func(input string, index int) bool {
-					vm := vms[index]
+					vm := okvms[index]
 					name := vm.PrivateIPAddresses
 					return strings.Contains(name, input)
 				},
@@ -56,7 +61,7 @@ func cmdDestroy() *cobra.Command {
 				return err
 			}
 
-			return client.Drop([]string{vms[i].InstanceID})
+			return client.Drop([]string{okvms[i].InstanceID})
 		},
 	}
 	c.Flags().BoolVarP(&all, "all", "a", false, "销毁所有虚拟机")
