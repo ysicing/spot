@@ -3,7 +3,6 @@ module github.com/ysicing/spot
 go 1.19
 
 require (
-	github.com/davecgh/go-spew v1.1.1
 	github.com/ergoapi/util v0.2.21
 	github.com/gosuri/uitable v0.0.4
 	github.com/manifoldco/promptui v0.9.0
@@ -11,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.493
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.494
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.493
 )
 
