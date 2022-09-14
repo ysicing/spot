@@ -3,7 +3,7 @@ module github.com/ysicing/spot
 go 1.19
 
 require (
-	github.com/ergoapi/util v0.2.22
+	github.com/ergoapi/util v0.2.23
 	github.com/gosuri/uitable v0.0.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/sirupsen/logrus v1.9.0
