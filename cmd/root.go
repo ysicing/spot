@@ -35,6 +35,7 @@ func BuildRoot() *cobra.Command {
 	rootCmd.AddCommand(cmdList())
 	rootCmd.AddCommand(cmdDestroy())
 	rootCmd.AddCommand(cmdRestart())
+	rootCmd.AddCommand(cmdScan())
 	return rootCmd
 }
 

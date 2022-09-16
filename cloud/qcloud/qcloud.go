@@ -14,13 +14,16 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	cvm "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/v20170312"
+	cwp "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cwp/v20180228"
 )
 
 type Client struct {
-	*cvm.Client
+	cvmCliet  *cvm.Client
+	cwpClient *cwp.Client
 }
 
 type Instance struct {
+	UUID               string
 	CreatedTime        string
 	InstanceName       string
 	InstanceID         string
@@ -40,11 +43,14 @@ func NewClient() *Client {
 	)
 	logrus.Debugf("credential: %s, %s", credential.SecretId, credential.SecretKey)
 	// 实例化一个client选项，可选的，没有特殊需求可以跳过
-	cpf := profile.NewClientProfile()
-	cpf.HttpProfile.Endpoint = "cvm.tencentcloudapi.com"
+	cvmcpf := profile.NewClientProfile()
+	cvmcpf.HttpProfile.Endpoint = "cvm.tencentcloudapi.com"
 	// 实例化要请求产品的client对象,clientProfile是可选的
-	client, _ := cvm.NewClient(credential, viper.GetString("qcloud.region"), cpf)
-	return &Client{client}
+	cvmClient, _ := cvm.NewClient(credential, viper.GetString("qcloud.region"), cvmcpf)
+	cwpcpf := profile.NewClientProfile()
+	cwpcpf.HttpProfile.Endpoint = "cwp.tencentcloudapi.com"
+	cwpClient, _ := cwp.NewClient(credential, viper.GetString("qcloud.region"), cwpcpf)
+	return &Client{cvmCliet: cvmClient, cwpClient: cwpClient}
 }
 
 func (c *Client) Create(count int64, netaccess, windows bool) error {
@@ -123,7 +129,7 @@ func (c *Client) Create(count int64, netaccess, windows bool) error {
 	request.DisableApiTermination = common.BoolPtr(false)
 
 	// 返回的resp是一个RunInstancesResponse的实例，与请求对象对应
-	response, err := c.RunInstances(request)
+	response, err := c.cvmCliet.RunInstances(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		return fmt.Errorf("tencent api error has returned: %v", err)
 	}
@@ -146,7 +152,7 @@ func (c *Client) List() ([]Instance, error) {
 	}
 
 	// 返回的resp是一个DescribeInstancesResponse的实例，与请求对象对应
-	response, err := c.DescribeInstances(request)
+	response, err := c.cvmCliet.DescribeInstances(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		return nil, fmt.Errorf("tencent api error has returned: %v", err)
 	}
@@ -173,6 +179,7 @@ func (c *Client) List() ([]Instance, error) {
 				InstanceState:      *i.InstanceState,
 				PrivateIPAddresses: ip,
 				PublicIPAddresses:  eip,
+				UUID:               *i.Uuid,
 			})
 		}
 	}
@@ -199,7 +206,7 @@ func (c *Client) Drop(ids []string) error {
 	request.InstanceIds = common.StringPtrs(ids)
 
 	// 返回的resp是一个TerminateInstancesResponse的实例，与请求对象对应
-	_, err := c.TerminateInstances(request)
+	_, err := c.cvmCliet.TerminateInstances(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		return fmt.Errorf("tencent api error has returned: %v", err)
 	}
@@ -220,12 +227,34 @@ func (c *Client) Restart(id string) error {
 	request.StopType = common.StringPtr("SOFT_FIRST")
 
 	// 返回的resp是一个RebootInstancesResponse的实例，与请求对象对应
-	_, err := c.RebootInstances(request)
+	_, err := c.cvmCliet.RebootInstances(request)
 	if _, ok := err.(*errors.TencentCloudSDKError); ok {
 		return fmt.Errorf("tencent api error has returned: %v", err)
 	}
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (c *Client) Scan(id string) error {
+	request := cwp.NewScanVulRequest()
+	request.VulLevels = common.StringPtr("1;2;3;4")
+	request.HostType = common.Uint64Ptr(2)
+	request.VulCategories = common.StringPtr("1;2;4")
+	request.QuuidList = common.StringPtrs([]string{id})
+	request.TimeoutPeriod = common.Uint64Ptr(3600)
+	response, err := c.cwpClient.ScanVul(request)
+	if terr, ok := err.(*errors.TencentCloudSDKError); ok {
+		if terr.Code == "OperationDenied" {
+			logrus.Warnf("%s %s", id, terr.Message)
+			return nil
+		}
+		return fmt.Errorf("tencent api error has returned: %v", err)
+	}
+	if err != nil {
+		return err
+	}
+	logrus.Infof("Scan %s task create %d", id, response.Response.TaskId)
 	return nil
 }

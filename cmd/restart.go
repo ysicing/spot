@@ -25,12 +25,6 @@ func cmdRestart() *cobra.Command {
 					okvms = append(okvms, vm)
 				}
 			}
-			okvms = append(okvms, qcloud.Instance{
-				InstanceID:         "ins-4yw9saqt",
-				InstanceName:       "name",
-				PrivateIPAddresses: "pip",
-				InstanceState:      "RUNNING",
-			})
 			if len(okvms) == 0 {
 				logrus.Info("没有可重启的虚拟机")
 				return nil
