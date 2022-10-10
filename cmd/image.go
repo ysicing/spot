@@ -16,14 +16,16 @@ func cmdImage() *cobra.Command {
 }
 
 func cmdImageList() *cobra.Command {
+	var notPublic bool
 	c := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls", "show"},
 		Short:   "列出腾讯云镜像",
 		RunE: func(c *cobra.Command, args []string) error {
 			client := qcloud.NewClient()
-			return client.ImageList()
+			return client.ImageList(notPublic)
 		},
 	}
+	c.Flags().BoolVar(&notPublic, "skip-public", true, "忽略官方镜像")
 	return c
 }

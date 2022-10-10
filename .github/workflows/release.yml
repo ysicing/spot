@@ -44,3 +44,12 @@ jobs:
           curl -F package=@$filename https://${FURY_TOKEN}@push.fury.io/ysicing/
           curl -F package=@$filename https://${FURY_TOKEN}@push.fury.io/ysicing/
         done
+
+    - run: ./gen.sh
+    - uses: peter-evans/create-pull-request@v4
+      with:
+        title: 'brew: updated spot'
+        commit-message: 'brew: updated spot'
+        branch: create-pull-request/brew
+        signoff: true
+        base: master
