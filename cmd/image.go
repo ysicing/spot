@@ -8,7 +8,7 @@ import (
 )
 
 type Action struct {
-	Key string
+	Key   string
 	Value string
 }
 
@@ -40,7 +40,7 @@ func cmdImageList() *cobra.Command {
 
 func cmdImagManage() *cobra.Command {
 	var notPublic, netaccess bool
-	action := []Action{{Key: "创建虚拟机",Value: "create",},{Key: "删除镜像", Value: "delete"}}
+	action := []Action{{Key: "创建虚拟机", Value: "create"}, {Key: "删除镜像", Value: "delete"}}
 
 	c := &cobra.Command{
 		Use:     "manage",
@@ -67,27 +67,29 @@ func cmdImagManage() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			actionPrompt := promptui.Select{
-				Label: "操作",
-				Items: action,
-				Templates: &promptui.SelectTemplates{
-					Label: "{{ . }}",
-					Active: "\U0001F449 {{ .Key | cyan }}",
-					Inactive: " {{ .Key }}",
-					Selected: "\U0001F389 {{ .Key | green }}",
-				},
-			}
-			a, _, err := actionPrompt.Run()
-			if err != nil {
-				return err
+			if images[i].ImageType != "官方" {
+				actionPrompt := promptui.Select{
+					Label: "操作",
+					Items: action,
+					Templates: &promptui.SelectTemplates{
+						Label:    "{{ . }}",
+						Active:   "\U0001F449 {{ .Key | cyan }}",
+						Inactive: " {{ .Key }}",
+						Selected: "\U0001F389 {{ .Key | green }}",
+					},
+				}
+				a, _, err := actionPrompt.Run()
+				if err != nil {
+					return err
+				}
+				if action[a].Value == "delete" {
+					logrus.Infof("删除镜像 %s", images[i].ImageID)
+					return client.ImageDrop([]string{images[i].ImageID})
+				}
 			}
 
-			if action[a].Value == "create" {
-				logrus.Infof("使用镜像 %s 创建竞价机器", images[i].ImageID)
-				return client.Create(1, netaccess, false, images[i].ImageID)
-			}
-			logrus.Infof("删除镜像 %s", images[i].ImageID)
-			return client.ImageDrop([]string{images[i].ImageID})
+			logrus.Infof("使用镜像 %s 创建竞价机器", images[i].ImageID)
+			return client.Create(1, netaccess, false, images[i].ImageID)
 		},
 	}
 	c.Flags().BoolVar(&notPublic, "skip-public", true, "忽略官方镜像")
