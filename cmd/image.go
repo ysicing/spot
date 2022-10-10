@@ -2,9 +2,15 @@ package cmd
 
 import (
 	"github.com/manifoldco/promptui"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/ysicing/spot/cloud/qcloud"
 )
+
+type Action struct {
+	Key string
+	Value string
+}
 
 func cmdImage() *cobra.Command {
 	i := &cobra.Command{
@@ -13,7 +19,7 @@ func cmdImage() *cobra.Command {
 		Short:   "管理腾讯云镜像",
 	}
 	i.AddCommand(cmdImageList())
-	i.AddCommand(cmdImagDeploy())
+	i.AddCommand(cmdImagManage())
 	return i
 }
 
@@ -32,12 +38,14 @@ func cmdImageList() *cobra.Command {
 	return c
 }
 
-func cmdImagDeploy() *cobra.Command {
+func cmdImagManage() *cobra.Command {
 	var notPublic, netaccess bool
+	action := []Action{{Key: "创建虚拟机",Value: "create",},{Key: "删除镜像", Value: "delete"}}
+
 	c := &cobra.Command{
-		Use:     "deploy",
-		Aliases: []string{"run", "show"},
-		Short:   "选择腾讯云镜像起虚拟机",
+		Use:     "manage",
+		Aliases: []string{"op"},
+		Short:   "管理腾讯云镜像\t 启动虚拟机 \t 删除镜像",
 		RunE: func(c *cobra.Command, args []string) error {
 			client := qcloud.NewClient()
 			images, err := client.ImageList(notPublic)
@@ -51,7 +59,7 @@ func cmdImagDeploy() *cobra.Command {
 					Label:    "{{ . }}?",
 					Active:   "\U0001F449 {{ .ImageID | cyan }} ({{ .ImageName | red }})",
 					Inactive: "  {{ .ImageID | cyan }} ({{ .ImageName | red }})",
-					Selected: "\U0001F389 选择 {{ .ImageID | green }} 创建虚拟机",
+					Selected: "\U0001F389 管理镜像: {{ .ImageID | green }}",
 				},
 				Size: 5,
 			}
@@ -59,7 +67,27 @@ func cmdImagDeploy() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return client.Create(1, netaccess, false, images[i].ImageID)
+			actionPrompt := promptui.Select{
+				Label: "操作",
+				Items: action,
+				Templates: &promptui.SelectTemplates{
+					Label: "{{ . }}",
+					Active: "\U0001F449 {{ .Key | cyan }}",
+					Inactive: " {{ .Key }}",
+					Selected: "\U0001F389 {{ .Key | green }}",
+				},
+			}
+			a, _, err := actionPrompt.Run()
+			if err != nil {
+				return err
+			}
+
+			if action[a].Value == "create" {
+				logrus.Infof("使用镜像 %s 创建竞价机器", images[i].ImageID)
+				return client.Create(1, netaccess, false, images[i].ImageID)
+			}
+			logrus.Infof("删除镜像 %s", images[i].ImageID)
+			return client.ImageDrop([]string{images[i].ImageID})
 		},
 	}
 	c.Flags().BoolVar(&notPublic, "skip-public", true, "忽略官方镜像")

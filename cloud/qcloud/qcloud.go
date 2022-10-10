@@ -333,3 +333,17 @@ func (c *Client) ImageShow(notPublic bool) error {
 	}
 	return output.EncodeTable(os.Stdout, table)
 }
+
+func (c *Client) ImageDrop(ids []string) error {
+	request := cvm.NewDeleteImagesRequest()
+	request.ImageIds = common.StringPtrs(ids)
+	request.DeleteBindedSnap = common.BoolPtr(true)
+	_, err := c.cvmCliet.DeleteImages(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		return fmt.Errorf("tencent api error has returned: %v", err)
+	}
+	if err != nil {
+		return err
+	}
+	return nil
+}
