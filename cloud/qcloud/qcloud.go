@@ -258,3 +258,20 @@ func (c *Client) Scan(id string) error {
 	logrus.Infof("Scan %s task create %d", id, response.Response.TaskId)
 	return nil
 }
+
+func (c *Client) ImageList() error {
+	request := cvm.NewDescribeImagesRequest()
+	response, err := c.cvmCliet.DescribeImages(request)
+	if err != nil {
+		if _, ok := err.(*errors.TencentCloudSDKError); ok {
+			return fmt.Errorf("tencent api error has returned: %v", err)
+		}
+		return err
+	}
+	table := uitable.New()
+	table.AddRow("创建时间", "Name", "ID", "来源", "OS", "类型", "类型", "状态", "描述")
+	for _, i := range response.Response.ImageSet {
+		table.AddRow(i.CreatedTime, i.ImageName, i.ImageId, i.ImageSource, i.OsName, i.ImageType, i.ImageState, i.ImageDescription)
+	}
+	return output.EncodeTable(os.Stdout, table)
+}
