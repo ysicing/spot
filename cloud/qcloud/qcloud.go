@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ergoapi/util/color"
 	"github.com/ergoapi/util/output"
 	"github.com/gosuri/uitable"
 	"github.com/sirupsen/logrus"
@@ -259,9 +260,28 @@ func (c *Client) Scan(id string) error {
 	return nil
 }
 
-func (c *Client) ImageList() error {
+func (c *Client) imageList() ([]*cvm.Image, error) {
 	request := cvm.NewDescribeImagesRequest()
-	response, err := c.cvmCliet.DescribeImages(request)
+	request.Offset = common.Uint64Ptr(0)
+	request.Limit = common.Uint64Ptr(100)
+	imageList := make([]*cvm.Image, 0)
+	totalCount := uint64(100)
+	for *request.Offset < totalCount {
+		response, err := c.cvmCliet.DescribeImages(request)
+		if err != nil {
+			return nil, err
+		}
+		if response.Response.ImageSet != nil && len(response.Response.ImageSet) > 0 {
+			imageList = append(imageList, response.Response.ImageSet...)
+		}
+		totalCount = uint64(*response.Response.TotalCount)
+		request.Offset = common.Uint64Ptr(*request.Offset + uint64(len(response.Response.ImageSet)))
+	}
+	return imageList, nil
+}
+
+func (c *Client) ImageList(notPublic bool) error {
+	images, err := c.imageList()
 	if err != nil {
 		if _, ok := err.(*errors.TencentCloudSDKError); ok {
 			return fmt.Errorf("tencent api error has returned: %v", err)
@@ -269,9 +289,24 @@ func (c *Client) ImageList() error {
 		return err
 	}
 	table := uitable.New()
-	table.AddRow("创建时间", "Name", "ID", "来源", "OS", "类型", "类型", "状态", "描述")
-	for _, i := range response.Response.ImageSet {
-		table.AddRow(i.CreatedTime, i.ImageName, i.ImageId, i.ImageSource, i.OsName, i.ImageType, i.ImageState, i.ImageDescription)
+	table.AddRow("Name", "ID", "OS", "类型", "状态", "描述")
+	imageType := ""
+	imageState := color.SGreen("正常")
+	for _, i := range images {
+		if *i.ImageState != "NORMAL" {
+			imageState = *i.ImageState
+		}
+		if *i.ImageType == "PUBLIC_IMAGE" {
+			if notPublic {
+				continue
+			}
+			imageType = "官方"
+		} else if *i.ImageType == "PRIVATE_IMAGE" {
+			imageType = "自定义镜像"
+		} else {
+			imageType = "共享镜像"
+		}
+		table.AddRow(*i.ImageName, *i.ImageId, *i.OsName, imageType, imageState, *i.ImageDescription)
 	}
 	return output.EncodeTable(os.Stdout, table)
 }
