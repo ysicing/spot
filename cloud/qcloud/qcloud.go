@@ -35,6 +35,15 @@ type Instance struct {
 	PublicIPAddresses  string
 }
 
+type Image struct {
+	ImageID          string
+	ImageName        string
+	ImageState       string
+	ImageType        string
+	ImageDescription string
+	OsName           string
+}
+
 func NewClient() *Client {
 	// 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
 	// 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
@@ -54,7 +63,7 @@ func NewClient() *Client {
 	return &Client{cvmCliet: cvmClient, cwpClient: cwpClient}
 }
 
-func (c *Client) Create(count int64, netaccess, windows bool) error {
+func (c *Client) Create(count int64, netaccess, windows bool, image string) error {
 
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := cvm.NewRunInstancesRequest()
@@ -67,7 +76,6 @@ func (c *Client) Create(count int64, netaccess, windows bool) error {
 		request.Placement.ProjectId = common.Int64Ptr(viper.GetInt64("qcloud.project.id"))
 	}
 	request.InstanceType = common.StringPtr(viper.GetString("qcloud.instance.type"))
-	request.ImageId = common.StringPtr(viper.GetString("qcloud.instance.image"))
 	disk := viper.GetInt64("qcloud.instance.disk")
 	if disk == 0 {
 		disk = 50
@@ -98,6 +106,10 @@ func (c *Client) Create(count int64, netaccess, windows bool) error {
 		}
 	}
 	request.InstanceCount = common.Int64Ptr(int64(count))
+	defaultImage := viper.GetString("qcloud.instance.image")
+	if len(image) == 0 || windows {
+		image = defaultImage
+	}
 	namePrefix := "spot"
 	if windows {
 		request.LoginSettings = &cvm.LoginSettings{
@@ -109,6 +121,7 @@ func (c *Client) Create(count int64, netaccess, windows bool) error {
 			KeyIds: common.StringPtrs(viper.GetStringSlice("qcloud.instance.auth.sshkey.ids")),
 		}
 	}
+	request.ImageId = common.StringPtr(image)
 	request.InstanceName = common.StringPtr(fmt.Sprintf("%s-%s", namePrefix, time.Now().Format("20060102150405")))
 	request.SecurityGroupIds = common.StringPtrs(viper.GetStringSlice("qcloud.instance.securitygroup.ids"))
 	request.EnhancedService = &cvm.EnhancedService{
@@ -260,11 +273,11 @@ func (c *Client) Scan(id string) error {
 	return nil
 }
 
-func (c *Client) imageList() ([]*cvm.Image, error) {
+func (c *Client) ImageList(notPublic bool) ([]Image, error) {
 	request := cvm.NewDescribeImagesRequest()
 	request.Offset = common.Uint64Ptr(0)
 	request.Limit = common.Uint64Ptr(100)
-	imageList := make([]*cvm.Image, 0)
+	imageList := make([]Image, 0)
 	totalCount := uint64(100)
 	for *request.Offset < totalCount {
 		response, err := c.cvmCliet.DescribeImages(request)
@@ -272,7 +285,31 @@ func (c *Client) imageList() ([]*cvm.Image, error) {
 			return nil, err
 		}
 		if response.Response.ImageSet != nil && len(response.Response.ImageSet) > 0 {
-			imageList = append(imageList, response.Response.ImageSet...)
+			for _, i := range response.Response.ImageSet {
+				if notPublic && *i.ImageType == "PUBLIC_IMAGE" {
+					continue
+				}
+				imageType := ""
+				imageState := color.SGreen("正常")
+				if *i.ImageState != "NORMAL" {
+					imageState = *i.ImageState
+				}
+				if *i.ImageType == "PUBLIC_IMAGE" {
+					imageType = "官方"
+				} else if *i.ImageType == "PRIVATE_IMAGE" {
+					imageType = "自定义镜像"
+				} else {
+					imageType = "共享镜像"
+				}
+				imageList = append(imageList, Image{
+					ImageID:          *i.ImageId,
+					ImageName:        *i.ImageName,
+					ImageState:       imageState,
+					ImageType:        imageType,
+					ImageDescription: *i.ImageDescription,
+					OsName:           *i.OsName,
+				})
+			}
 		}
 		totalCount = uint64(*response.Response.TotalCount)
 		request.Offset = common.Uint64Ptr(*request.Offset + uint64(len(response.Response.ImageSet)))
@@ -280,8 +317,8 @@ func (c *Client) imageList() ([]*cvm.Image, error) {
 	return imageList, nil
 }
 
-func (c *Client) ImageList(notPublic bool) error {
-	images, err := c.imageList()
+func (c *Client) ImageShow(notPublic bool) error {
+	images, err := c.ImageList(notPublic)
 	if err != nil {
 		if _, ok := err.(*errors.TencentCloudSDKError); ok {
 			return fmt.Errorf("tencent api error has returned: %v", err)
@@ -290,23 +327,9 @@ func (c *Client) ImageList(notPublic bool) error {
 	}
 	table := uitable.New()
 	table.AddRow("Name", "ID", "OS", "类型", "状态", "描述")
-	imageType := ""
-	imageState := color.SGreen("正常")
+
 	for _, i := range images {
-		if *i.ImageState != "NORMAL" {
-			imageState = *i.ImageState
-		}
-		if *i.ImageType == "PUBLIC_IMAGE" {
-			if notPublic {
-				continue
-			}
-			imageType = "官方"
-		} else if *i.ImageType == "PRIVATE_IMAGE" {
-			imageType = "自定义镜像"
-		} else {
-			imageType = "共享镜像"
-		}
-		table.AddRow(*i.ImageName, *i.ImageId, *i.OsName, imageType, imageState, *i.ImageDescription)
+		table.AddRow(i.ImageName, i.ImageID, i.OsName, i.ImageType, i.ImageState, i.ImageDescription)
 	}
 	return output.EncodeTable(os.Stdout, table)
 }
