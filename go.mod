@@ -7,7 +7,7 @@ require (
 	github.com/gosuri/uitable v0.0.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/spf13/cobra v1.5.0
+	github.com/spf13/cobra v1.6.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.13.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.510
@@ -26,7 +26,7 @@ require (
 	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
