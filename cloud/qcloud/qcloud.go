@@ -15,12 +15,10 @@ import (
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/errors"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common/profile"
 	cvm "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm/v20170312"
-	cwp "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cwp/v20180228"
 )
 
 type Client struct {
-	cvmCliet  *cvm.Client
-	cwpClient *cwp.Client
+	cvmCliet *cvm.Client
 }
 
 type Instance struct {
@@ -44,7 +42,7 @@ type Image struct {
 	OsName           string
 }
 
-func NewClient() *Client {
+func NewClient(regions ...string) *Client {
 	// 实例化一个认证对象，入参需要传入腾讯云账户secretId，secretKey,此处还需注意密钥对的保密
 	// 密钥可前往https://console.cloud.tencent.com/cam/capi网站进行获取
 	credential := common.NewCredential(
@@ -52,15 +50,15 @@ func NewClient() *Client {
 		viper.GetString("qcloud.account.secret"),
 	)
 	logrus.Debugf("credential: %s, %s", credential.SecretId, credential.SecretKey)
+	region := viper.GetString("qcloud.region")
+	if len(regions) > 0 {
+		region = regions[0]
+	}
 	// 实例化一个client选项，可选的，没有特殊需求可以跳过
 	cvmcpf := profile.NewClientProfile()
 	cvmcpf.HttpProfile.Endpoint = "cvm.tencentcloudapi.com"
-	// 实例化要请求产品的client对象,clientProfile是可选的
-	cvmClient, _ := cvm.NewClient(credential, viper.GetString("qcloud.region"), cvmcpf)
-	cwpcpf := profile.NewClientProfile()
-	cwpcpf.HttpProfile.Endpoint = "cwp.tencentcloudapi.com"
-	cwpClient, _ := cwp.NewClient(credential, viper.GetString("qcloud.region"), cwpcpf)
-	return &Client{cvmCliet: cvmClient, cwpClient: cwpClient}
+	cvmClient, _ := cvm.NewClient(credential, region, cvmcpf)
+	return &Client{cvmCliet: cvmClient}
 }
 
 func (c *Client) Create(count int64, netaccess, windows bool, image string) error {
@@ -141,6 +139,112 @@ func (c *Client) Create(count int64, netaccess, windows bool, image string) erro
 		},
 	}
 	request.DisableApiTermination = common.BoolPtr(false)
+
+	// 返回的resp是一个RunInstancesResponse的实例，与请求对象对应
+	response, err := c.cvmCliet.RunInstances(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		return fmt.Errorf("tencent api error has returned: %v", err)
+	}
+	if err != nil {
+		return err
+	}
+	logrus.Debugf("%s", response.ToJsonString())
+	return nil
+}
+
+func (c *Client) CreateArm(count, exp int64, netaccess bool, image string) error {
+
+	// 实例化一个请求对象,每个接口都会对应一个request对象
+	request := cvm.NewRunInstancesRequest()
+	// arm 只支持按量
+	request.InstanceChargeType = common.StringPtr("POSTPAID_BY_HOUR")
+	qzone := viper.GetString("qcloud.zone")
+	if !strings.HasPrefix(qzone, "ap-guangzhou-") {
+		qzone = "ap-guangzhou-6"
+	}
+	request.Placement = &cvm.Placement{
+		Zone: common.StringPtr(qzone),
+	}
+	if viper.GetInt64("qcloud.project.id") > 0 {
+		request.Placement.ProjectId = common.Int64Ptr(viper.GetInt64("qcloud.project.id"))
+	}
+	intype := viper.GetString("qcloud.instance.type")
+	if !strings.HasPrefix(intype, "SR") {
+		intype = "SR1.MEDIUM2"
+	}
+	request.InstanceType = common.StringPtr(intype)
+	disk := viper.GetInt64("qcloud.instance.disk")
+	if disk == 0 {
+		disk = 50
+	}
+	request.SystemDisk = &cvm.SystemDisk{
+		DiskType: common.StringPtr("CLOUD_PREMIUM"),
+		DiskSize: common.Int64Ptr(disk),
+	}
+	vpcid := viper.GetString("qcloud.instance.network.vpc.id")
+	vpcsub := viper.GetString("qcloud.instance.network.subnet.id")
+	if len(vpcid) > 4 && len(vpcsub) > 7 {
+		request.VirtualPrivateCloud = &cvm.VirtualPrivateCloud{
+			VpcId:            common.StringPtr(vpcid),
+			SubnetId:         common.StringPtr(vpcsub),
+			AsVpcGateway:     common.BoolPtr(false),
+			Ipv6AddressCount: common.Uint64Ptr(0),
+		}
+	}
+	if count == 1 && netaccess {
+		request.InternetAccessible = &cvm.InternetAccessible{
+			InternetChargeType:      common.StringPtr("TRAFFIC_POSTPAID_BY_HOUR"),
+			InternetMaxBandwidthOut: common.Int64Ptr(100),
+			PublicIpAssigned:        common.BoolPtr(true),
+		}
+	} else {
+		request.InternetAccessible = &cvm.InternetAccessible{
+			InternetMaxBandwidthOut: common.Int64Ptr(0),
+			PublicIpAssigned:        common.BoolPtr(false),
+		}
+	}
+	request.InstanceCount = common.Int64Ptr(int64(count))
+	defaultImage := viper.GetString("qcloud.instance.image")
+	if len(image) == 0 {
+		image = defaultImage
+	}
+	namePrefix := "spot-arm"
+	request.LoginSettings = &cvm.LoginSettings{
+		KeyIds: common.StringPtrs(viper.GetStringSlice("qcloud.instance.auth.sshkey.ids")),
+	}
+	request.ImageId = common.StringPtr(image)
+	request.InstanceName = common.StringPtr(fmt.Sprintf("%s-%s", namePrefix, time.Now().Format("20060102150405")))
+	request.SecurityGroupIds = common.StringPtrs(viper.GetStringSlice("qcloud.instance.securitygroup.ids"))
+	request.EnhancedService = &cvm.EnhancedService{
+		SecurityService: &cvm.RunSecurityServiceEnabled{
+			Enabled: common.BoolPtr(true),
+		},
+		MonitorService: &cvm.RunMonitorServiceEnabled{
+			Enabled: common.BoolPtr(true),
+		},
+		AutomationService: &cvm.RunAutomationServiceEnabled{
+			Enabled: common.BoolPtr(true),
+		},
+	}
+	request.InstanceMarketOptions = &cvm.InstanceMarketOptionsRequest{
+		SpotOptions: &cvm.SpotMarketOptions{
+			MaxPrice: common.StringPtr("1000"),
+		},
+	}
+	request.DisableApiTermination = common.BoolPtr(false)
+	if exp >= 12 {
+		exp = 12
+	}
+	if exp <= 1 {
+		exp = 1
+	}
+	request.ActionTimer = &cvm.ActionTimer{
+		TimerAction: common.StringPtr("TerminateInstances"),
+		ActionTime:  common.StringPtr(time.Now().Add(time.Hour * time.Duration(exp)).Format("2006-01-02 15:04:05")),
+		Externals: &cvm.Externals{
+			ReleaseAddress: common.BoolPtr(true),
+		},
+	}
 
 	// 返回的resp是一个RunInstancesResponse的实例，与请求对象对应
 	response, err := c.cvmCliet.RunInstances(request)
@@ -248,28 +352,6 @@ func (c *Client) Restart(id string) error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (c *Client) Scan(id string) error {
-	request := cwp.NewScanVulRequest()
-	request.VulLevels = common.StringPtr("1;2;3;4")
-	request.HostType = common.Uint64Ptr(2)
-	request.VulCategories = common.StringPtr("1;2;4")
-	request.QuuidList = common.StringPtrs([]string{id})
-	request.TimeoutPeriod = common.Uint64Ptr(3600)
-	response, err := c.cwpClient.ScanVul(request)
-	if terr, ok := err.(*errors.TencentCloudSDKError); ok {
-		if terr.Code == "OperationDenied" {
-			logrus.Warnf("%s %s", id, terr.Message)
-			return nil
-		}
-		return fmt.Errorf("tencent api error has returned: %v", err)
-	}
-	if err != nil {
-		return err
-	}
-	logrus.Infof("Scan %s task create %d", id, response.Response.TaskId)
 	return nil
 }
 

@@ -1,0 +1,13 @@
+qcloud:
+  account:
+    id: <qcloud-SecretId>
+    secret: <qcloud-SecretId>
+  instance:
+    image: img-kh0snalc
+    type: SR1.MEDIUM2
+    auth:
+      sshkey:
+        ids:
+          - sshkey-id
+    securitygroup:
+      id: sg-id
