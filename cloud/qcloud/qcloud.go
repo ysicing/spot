@@ -259,6 +259,21 @@ func (c *Client) CreateArm(count, exp int64, netaccess bool, image string) error
 }
 
 func (c *Client) List() ([]Instance, error) {
+	var ins []Instance
+	sins, err := c.ListSPOTPAID()
+	if err != nil {
+		return nil, err
+	}
+	ins = append(ins, sins...)
+	hins, err := c.ListPOSTPAIDBYHOUR()
+	if err != nil {
+		return nil, err
+	}
+	ins = append(ins, hins...)
+	return ins, nil
+}
+
+func (c *Client) ListSPOTPAID() ([]Instance, error) {
 	// 实例化一个请求对象,每个接口都会对应一个request对象
 	request := cvm.NewDescribeInstancesRequest()
 
@@ -266,6 +281,52 @@ func (c *Client) List() ([]Instance, error) {
 		{
 			Name:   common.StringPtr("instance-charge-type"),
 			Values: common.StringPtrs([]string{"SPOTPAID"}),
+		},
+	}
+
+	// 返回的resp是一个DescribeInstancesResponse的实例，与请求对象对应
+	response, err := c.cvmCliet.DescribeInstances(request)
+	if _, ok := err.(*errors.TencentCloudSDKError); ok {
+		return nil, fmt.Errorf("tencent api error has returned: %v", err)
+	}
+	if err != nil {
+		return nil, err
+	}
+	var ins []Instance
+	for _, i := range response.Response.InstanceSet {
+		if strings.HasPrefix(*i.InstanceName, "spot") {
+			ip := "-"
+			if len(i.PrivateIpAddresses) != 0 {
+				ip = *i.PrivateIpAddresses[0]
+			}
+			eip := "-"
+			if len(i.PublicIpAddresses) != 0 {
+				eip = *i.PublicIpAddresses[0]
+			}
+			ins = append(ins, Instance{
+				CreatedTime:        *i.CreatedTime,
+				InstanceID:         *i.InstanceId,
+				InstanceName:       *i.InstanceName,
+				InstanceType:       *i.InstanceType,
+				InstanceChargeType: *i.InstanceChargeType,
+				InstanceState:      *i.InstanceState,
+				PrivateIPAddresses: ip,
+				PublicIPAddresses:  eip,
+				UUID:               *i.Uuid,
+			})
+		}
+	}
+	return ins, nil
+}
+
+func (c *Client) ListPOSTPAIDBYHOUR() ([]Instance, error) {
+	// 实例化一个请求对象,每个接口都会对应一个request对象
+	request := cvm.NewDescribeInstancesRequest()
+
+	request.Filters = []*cvm.Filter{
+		{
+			Name:   common.StringPtr("instance-charge-type"),
+			Values: common.StringPtrs([]string{"POSTPAID_BY_HOUR"}),
 		},
 	}
 
