@@ -6,6 +6,9 @@ qcloud:
   region: ap-shanghai
   # project:
   #   id: <项目ID>
+  #tags:
+  #  - aaa::bbb
+  #  - key::value
   instance:
     image: img-id
     type: SA2.MEDIUM4

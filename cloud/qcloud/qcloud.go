@@ -133,6 +133,26 @@ func (c *Client) Create(count int64, netaccess, windows bool, image string) erro
 			Enabled: common.BoolPtr(true),
 		},
 	}
+	tags := viper.GetStringSlice("qcloud.tags")
+	if len(tags) > 0 {
+		var ts []*cvm.Tag
+		for _, t := range tags {
+			tt := strings.Split(t, "::")
+			if len(tt) == 2 {
+				ts = append(ts, &cvm.Tag{
+					Key:   common.StringPtr(tt[0]),
+					Value: common.StringPtr(tt[1]),
+				})
+			}
+		}
+		request.TagSpecification = []*cvm.TagSpecification{
+			{
+				ResourceType: common.StringPtr("instance"),
+				Tags:         ts,
+			},
+		}
+	}
+
 	request.InstanceMarketOptions = &cvm.InstanceMarketOptionsRequest{
 		SpotOptions: &cvm.SpotMarketOptions{
 			MaxPrice: common.StringPtr("1000"),
@@ -225,6 +245,25 @@ func (c *Client) CreateArm(count, exp int64, netaccess bool, image string) error
 		AutomationService: &cvm.RunAutomationServiceEnabled{
 			Enabled: common.BoolPtr(true),
 		},
+	}
+	tags := viper.GetStringSlice("qcloud.tags")
+	if len(tags) > 0 {
+		var ts []*cvm.Tag
+		for _, t := range tags {
+			tt := strings.Split(t, "::")
+			if len(tt) == 2 {
+				ts = append(ts, &cvm.Tag{
+					Key:   common.StringPtr(tt[0]),
+					Value: common.StringPtr(tt[1]),
+				})
+			}
+		}
+		request.TagSpecification = []*cvm.TagSpecification{
+			{
+				ResourceType: common.StringPtr("instance"),
+				Tags:         ts,
+			},
+		}
 	}
 	request.InstanceMarketOptions = &cvm.InstanceMarketOptionsRequest{
 		SpotOptions: &cvm.SpotMarketOptions{
