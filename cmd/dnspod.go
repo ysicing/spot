@@ -1,21 +1,29 @@
 package cmd
 
 import (
+	"errors"
 	"strings"
-
-	"github.com/ysicing/spot/cloud/qcloud"
 
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/ysicing/spot/cloud/qcloud"
 )
 
-func cmdDestroy() *cobra.Command {
-	var all bool
+func cmdDnspod() *cobra.Command {
 	c := &cobra.Command{
-		Use:     "destroy",
-		Aliases: []string{"down", "delete"},
-		Short:   "销毁腾讯云竞价虚拟机",
+		Use:     "dnspod",
+		Short:   "虚拟机创建解析记录",
+		Version: "0.3.0",
+		PreRunE: func(c *cobra.Command, args []string) error {
+			domain := viper.GetString("qcloud.dnspod.main")
+			sub := viper.GetString("qcloud.dnspod.sub")
+			if len(domain) == 0 || len(sub) == 0 {
+				return errors.New("请配置qcloud.dnspod.main和qcloud.dnspod.sub")
+			}
+			return nil
+		},
 		RunE: func(c *cobra.Command, args []string) error {
 			client := qcloud.NewClient()
 			vms, err := client.List()
@@ -24,23 +32,15 @@ func cmdDestroy() *cobra.Command {
 			}
 
 			okvms := []qcloud.Instance{}
-			var ids []string
+
 			for _, vm := range vms {
 				if vm.InstanceState == "RUNNING" {
-					ids = append(ids, vm.InstanceID)
 					okvms = append(okvms, vm)
 				}
 			}
 			if len(okvms) == 0 {
-				logrus.Info("没有可销毁的虚拟机")
+				logrus.Info("没有可用虚拟机")
 				return nil
-			}
-			if all {
-				logrus.Infof("销毁所有虚拟机, 数目: %d", len(ids))
-				for _, vm := range okvms {
-					client.DeleteRecord(vm.PublicIPAddresses)
-				}
-				return client.Drop(ids)
 			}
 			prompt := promptui.Select{
 				Label: "选择虚拟机",
@@ -63,10 +63,8 @@ func cmdDestroy() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			client.DeleteRecord(okvms[i].PublicIPAddresses)
-			return client.Drop([]string{okvms[i].InstanceID})
+			return client.CreateOrUpdateRecord(okvms[i].PublicIPAddresses)
 		},
 	}
-	c.Flags().BoolVarP(&all, "all", "a", false, "销毁所有虚拟机")
 	return c
 }

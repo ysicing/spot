@@ -37,6 +37,7 @@ func BuildRoot() *cobra.Command {
 	rootCmd.AddCommand(cmdRestart())
 	rootCmd.AddCommand(cmdNewArm())
 	rootCmd.AddCommand(cmdImage())
+	rootCmd.AddCommand(cmdDnspod())
 	return rootCmd
 }
 
@@ -47,7 +48,7 @@ func NewRootCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		Short:         "腾讯云虚拟机管理工具",
-		Version:       "0.2",
+		Version:       "0.3.0",
 		PersistentPreRunE: func(cobraCmd *cobra.Command, args []string) error {
 			if globalFlags.Debug {
 				logrus.SetLevel(logrus.DebugLevel)

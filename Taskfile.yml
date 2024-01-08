@@ -1,0 +1,48 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+
+  gomod:
+    desc: update go mod
+    cmds:
+      - go mod tidy
+
+  gofmt:
+    cmds:
+      - go install golang.org/x/tools/cmd/goimports@latest
+      - gofmt -s -w .
+      - goimports -w .
+
+  golint:
+    cmds:
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+      - golangci-lint run -v ./...
+
+  lint:
+    cmds:
+      - task: gofmt
+      - task: golint
+
+  fmt:
+    cmds:
+      - task: gomod
+      - task: gofmt
+      - task: golint
+
+  snapshot:
+    desc: Build Snapshot
+    cmds:
+      - task: clean
+      - go install github.com/goreleaser/goreleaser@latest
+      - goreleaser release --snapshot --clean --skip-publish
+
+  clean:
+    desc: Clean Up Build Cache Files
+    cmds:
+      - rm -rf dist
+
+  default:
+    cmds:
+      - task: snapshot

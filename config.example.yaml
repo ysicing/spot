@@ -24,3 +24,6 @@ qcloud:
           - sshkey-id
     securitygroup:
       id: sg-id
+  dnspod:
+    main: "ysicing.net"
+    sub: "*.dev"

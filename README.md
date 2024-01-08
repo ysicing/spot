@@ -14,10 +14,11 @@
 
 - [x] 开通Linux/Windows竞价机器
 - [x] 重启机器
-- [x] 销毁机器
+- [x] 销毁机器同时删除解析记录
 - [x] 列出镜像列表
 - [x] 选择镜像启动虚拟机
 - [x] 开通LinuxArm架构按量机器(限定广州地域)
+- [x] 支持添加解析记录
 
 ## 安装
 
@@ -37,7 +38,7 @@ brew install spotvm
 ### Debian系安装
 
 ```bash
-echo "deb [trusted=yes] https://debian.ysicing.me/ /" | sudo tee /etc/apt/sources.list.d/ysicing.list
+echo "deb [trusted=yes] https://mirrors.ysicing.net/ysicing/apt/ /" | sudo tee /etc/apt/sources.list.d/ysicing.list
 apt update
 apt install -y spot
 spot -v
@@ -56,7 +57,7 @@ gpgcheck=0
 
 ### 源码编译安装
 
-- 支持go v1.18+
+- 支持go v1.21+
 
 ```bash
 # Clone the repo
