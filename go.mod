@@ -10,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.18.2
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.836
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.838
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.833
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.835
 )
