@@ -11,7 +11,7 @@ func cmdList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls", "show"},
 		Short:   "列出腾讯云竞价虚拟机",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			return client.Show()
 		},

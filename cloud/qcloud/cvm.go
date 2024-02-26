@@ -97,7 +97,10 @@ func (c *Client) Create(count int64, netaccess, windows bool, image string) erro
 	}
 	request.ImageId = common.StringPtr(image)
 	request.InstanceName = common.StringPtr(fmt.Sprintf("%s-%s", namePrefix, time.Now().Format("20060102150405")))
-	request.SecurityGroupIds = common.StringPtrs(viper.GetStringSlice("qcloud.instance.securitygroup.ids"))
+	securityGroups := viper.GetStringSlice("qcloud.instance.securitygroup.ids")
+	if len(securityGroups) > 0 {
+		request.SecurityGroupIds = common.StringPtrs(securityGroups)
+	}
 	request.EnhancedService = &cvm.EnhancedService{
 		SecurityService: &cvm.RunSecurityServiceEnabled{
 			Enabled: common.BoolPtr(true),
@@ -210,7 +213,10 @@ func (c *Client) CreateArm(count, exp int64, netaccess bool, image string) error
 	}
 	request.ImageId = common.StringPtr(image)
 	request.InstanceName = common.StringPtr(fmt.Sprintf("%s-%s", namePrefix, time.Now().Format("20060102150405")))
-	request.SecurityGroupIds = common.StringPtrs(viper.GetStringSlice("qcloud.instance.securitygroup.ids"))
+	securityGroups := viper.GetStringSlice("qcloud.instance.securitygroup.ids")
+	if len(securityGroups) > 0 {
+		request.SecurityGroupIds = common.StringPtrs(securityGroups)
+	}
 	request.EnhancedService = &cvm.EnhancedService{
 		SecurityService: &cvm.RunSecurityServiceEnabled{
 			Enabled: common.BoolPtr(true),

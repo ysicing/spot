@@ -14,7 +14,7 @@ func cmdNew() *cobra.Command {
 		Use:     "new",
 		Aliases: []string{"up", "create"},
 		Short:   "新建腾讯云虚拟机",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			return client.Create(count, netaccess, windows, image)
 		},

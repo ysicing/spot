@@ -29,7 +29,7 @@ func cmdImageList() *cobra.Command {
 		Use:     "list",
 		Aliases: []string{"ls", "show"},
 		Short:   "列出腾讯云镜像",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			return client.ImageShow(notPublic)
 		},
@@ -46,7 +46,7 @@ func cmdImagManage() *cobra.Command {
 		Use:     "manage",
 		Aliases: []string{"op"},
 		Short:   "管理腾讯云镜像\t 启动虚拟机 \t 删除镜像",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			images, err := client.ImageList(notPublic)
 			if err != nil {

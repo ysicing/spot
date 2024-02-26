@@ -16,7 +16,7 @@ func cmdDnspod() *cobra.Command {
 		Use:     "dnspod",
 		Short:   "虚拟机创建解析记录",
 		Version: "0.3.0",
-		PreRunE: func(c *cobra.Command, args []string) error {
+		PreRunE: func(_ *cobra.Command, _ []string) error {
 			domain := viper.GetString("qcloud.dnspod.main")
 			sub := viper.GetString("qcloud.dnspod.sub")
 			if len(domain) == 0 || len(sub) == 0 {
@@ -24,7 +24,7 @@ func cmdDnspod() *cobra.Command {
 			}
 			return nil
 		},
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			vms, err := client.List()
 			if err != nil {

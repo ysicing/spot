@@ -16,7 +16,7 @@ func cmdDestroy() *cobra.Command {
 		Use:     "destroy",
 		Aliases: []string{"down", "delete"},
 		Short:   "销毁腾讯云竞价虚拟机",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient()
 			vms, err := client.List()
 			if err != nil {

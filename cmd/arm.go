@@ -14,7 +14,7 @@ func cmdNewArm() *cobra.Command {
 		Use:     "arm",
 		Short:   "新建腾讯云ARM虚拟机",
 		Version: "0.1.0",
-		RunE: func(c *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			client := qcloud.NewClient("ap-guangzhou")
 			return client.CreateArm(count, exp, netaccess, image)
 		},
