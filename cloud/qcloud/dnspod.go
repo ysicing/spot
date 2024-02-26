@@ -1,6 +1,8 @@
 package qcloud
 
 import (
+	"errors"
+
 	"github.com/sirupsen/logrus"
 	"github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common"
 	dnspod "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod/v20210323"
@@ -10,7 +12,7 @@ func (d *Client) CreateOrUpdateRecord(ip string) error {
 	if len(d.domain) == 0 || len(d.sub) == 0 {
 		return nil
 	}
-	recordID, err := d.searchRecord(ip)
+	recordID, err := d.searchRecord()
 	if err != nil {
 		return err
 	}
@@ -24,7 +26,7 @@ func (d *Client) DeleteRecord(ip string) error {
 	if len(d.domain) == 0 || len(d.sub) == 0 {
 		return nil
 	}
-	recordID, err := d.searchRecord(ip)
+	recordID, err := d.searchRecord()
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,7 @@ func (d *Client) DeleteRecord(ip string) error {
 	return nil
 }
 
-func (d *Client) searchRecord(ip string) (*uint64, error) {
+func (d *Client) searchRecord() (*uint64, error) {
 	request := dnspod.NewDescribeRecordListRequest()
 	request.Domain = common.StringPtr(d.domain)
 	request.Subdomain = common.StringPtr(d.sub)
@@ -51,10 +53,15 @@ func (d *Client) searchRecord(ip string) (*uint64, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(response.Response.RecordList) == 0 {
+		return nil, nil
+	}
+	if len(response.Response.RecordList) > 1 {
+		logrus.Warnf("find more than one record %s.%s", d.sub, d.domain)
+		return nil, errors.New("find more than one record")
+	}
 	for _, record := range response.Response.RecordList {
-		if *record.Value == ip {
-			return record.RecordId, nil
-		}
+		return record.RecordId, nil
 	}
 	return nil, nil
 }

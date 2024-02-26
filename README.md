@@ -96,20 +96,29 @@ qcloud:
     # 安全组
     securitygroup:
       id: sg-xxxx
+
+  dnspod:
+    main: "ysicing.net"
+    sub: "*.dev"
 ```
 
 ### 使用
 
 ```bash
 # 创建1台机器, 默认开启公网访问100M按流量计费， 超过1台则默认不分配公网ip(因为我们环境默认nat出去)
-spot new --config  /home/ysicing/.spot.yaml
+spot new --config /home/ysicing/.spot.yaml
 # 列表
-spot list --config  /home/ysicing/.spot.yaml
+spot list --config /home/ysicing/.spot.yaml
 INFO[0000] Using config file: /home/ysicing/.spot.yaml
-创建时间            	Name               	ID          	内网IP     	公网IP        	规格       	类型    	状态
-2022-08-22T13:17:34Z	spot-20220822211647	ins-kysdso6l	10.10.16.39	42.192.202.136	SA2.MEDIUM4	SPOTPAID	RUNNING
+创建时间             Name                ID           内网IP      公网IP         规格        类型     状态
+2022-08-22T13:17:34Z spot-20220822211647 ins-kysdso6l 10.10.16.39 42.192.202.136 SA2.MEDIUM4 SPOTPAID RUNNING
 # 销毁
-spot destroy --config  /home/ysicing/.spot.yaml
+spot destroy --config /home/ysicing/.spot.yaml
 # 销毁全部
-spot destroy --config  /home/ysicing/.spot.yaml --all
+spot destroy --config /home/ysicing/.spot.yaml --all
+# 添加解析记录
+spot dnspod --config /home/ysicing/.spot.yaml
+INFO[0000] Using config file: /home/ysicing/.spot.yaml
+🎉 10.10.16.25
+INFO[0003] create record success *.dev.ysicing.net ---> 106.54.x.x
 ```
