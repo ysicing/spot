@@ -21,7 +21,7 @@ jobs:
         check-latest: true
         go-version: 1.21.x
     - name: Cache Go Dependencies
-      uses: magnetikonline/action-golang-cache@v4
+      uses: magnetikonline/action-golang-cache@v5
       with:
         go-version-file: go.mod
     - name: Run GoReleaser
