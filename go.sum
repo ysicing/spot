@@ -110,12 +110,13 @@ github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcU
 github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.909 h1:JW3cLk0kRgsrUOc0jDDLQxD4XWanOBfFx6/vYSweRVs=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.909/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.910 h1:u+rAnHhLixQaNYy8vtnuClj4kYWs77VAHEbi9jl8k/4=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.910/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.909 h1:+pPAf6ExntfprwgBNSfjG2D8nMGcljjmEgAKJ9kfTL4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.909/go.mod h1:UMaX5FMqWd8gAQr1pKfxmFq+XRPMb4WI8MowwebAgd4=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.909 h1:iUO/85P1v2YpuAZU/dteQAZryfbpC/PL8RnWT2ywgHQ=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.909/go.mod h1:FKK+LxeU/g4s2h65Q6+PZVgf1usomDk2e5XWnDQ3TOY=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.910 h1:dO8s0rMnCO6FkP9LocS2zzn0AmTnQsjFcBhH55e8mOM=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.910/go.mod h1:SzZONdscLNC9REG/GV7prP42YNAQ3ft8ovurtGNWTec=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
