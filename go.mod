@@ -3,7 +3,7 @@ module github.com/ysicing/spot
 go 1.22.0
 
 require (
-	github.com/ergoapi/util v0.6.5
+	github.com/ergoapi/util v0.7.0
 	github.com/gosuri/uitable v0.0.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/sirupsen/logrus v1.9.3
@@ -54,5 +54,5 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
-	tailscale.com v1.64.1 // indirect
+	tailscale.com v1.64.2 // indirect
 )
