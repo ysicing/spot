@@ -21,8 +21,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dblohm7/wingoes v0.0.0-20240123200102-b75a8a7d7eb0 h1:vrC07UZcgPzu/OjWsmQKMGg3LoPSz9jh/pQXIrHjUj4=
 github.com/dblohm7/wingoes v0.0.0-20240123200102-b75a8a7d7eb0/go.mod h1:Nx87SkVqTKd8UtT+xu7sM/l+LgXs6c0aHrlKusR+2EQ=
-github.com/ergoapi/util v0.7.3 h1:yWNAL0Tq1Im1gyoIOEumZ1kPqzo3f44ecv3B6pj2bX8=
-github.com/ergoapi/util v0.7.3/go.mod h1:NsV78DG20e2wkFYD7zfYzB3q2t9A4Wt3Pd4teh+A82Q=
+github.com/ergoapi/util v0.7.4 h1:MRcj3LruGq7cc94gw7Wnz8tDE1LQ/ZQ+BUzrwyDTCfQ=
+github.com/ergoapi/util v0.7.4/go.mod h1:NsV78DG20e2wkFYD7zfYzB3q2t9A4Wt3Pd4teh+A82Q=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
