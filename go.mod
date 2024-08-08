@@ -12,7 +12,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.979
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.979
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.978
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.979
 )
 
 require (
