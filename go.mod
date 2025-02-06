@@ -11,9 +11,9 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.19.0
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1091
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1092
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1091
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1090
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1092
 )
 
 require (
