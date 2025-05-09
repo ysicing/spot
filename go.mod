@@ -1,6 +1,7 @@
 module github.com/ysicing/spot
 
-go 1.22.0
+go 1.23.1
+
 toolchain go1.24.1
 
 require (
@@ -11,8 +12,8 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.6
 	github.com/spf13/viper v1.20.1
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1160
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1154
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.1161
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.0.1161
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.0.1136
 )
 
