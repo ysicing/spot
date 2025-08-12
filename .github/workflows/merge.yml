@@ -9,7 +9,7 @@ jobs:
     name: Update
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Pull Request Automerge
         if: github.actor == 'dependabot[bot]'
         uses: peter-evans/enable-pull-request-automerge@v3
