@@ -3,7 +3,7 @@ module github.com/ysicing/spot
 go 1.25.3
 
 require (
-	github.com/ergoapi/util v1.2.1
+	github.com/ergoapi/util v1.2.2
 	github.com/gosuri/uitable v0.0.4
 	github.com/manifoldco/promptui v0.9.0
 	github.com/sirupsen/logrus v1.9.3
@@ -17,7 +17,7 @@ require (
 
 require (
 	github.com/chzyer/readline v1.5.1 // indirect
-	github.com/cockroachdb/errors v1.11.3 // indirect
+	github.com/cockroachdb/errors v1.12.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240123200102-b75a8a7d7eb0 // indirect
@@ -43,12 +43,13 @@ require (
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	go4.org/mem v0.0.0-20240501181205-ae6ca9944745 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
-	sigs.k8s.io/yaml v1.4.0 // indirect
-	tailscale.com v1.90.6 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
+	tailscale.com v1.92.0 // indirect
 )
