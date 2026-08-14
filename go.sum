@@ -99,8 +99,8 @@ github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.131/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.154/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.155 h1:142i5n5u0TcSyJM8YrQNPq1owhD7cXMvvWM45+BcrK0=
-github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.155/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.156 h1:A3DxpqGh8DF+rCRJVGlNJaeOJ/l6FkhCKhdEaUeu0Dc=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.156/go.mod h1:r5r4xbfxSaeR04b166HGsBa/R4U3SueirEUpXGuw+Q0=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.3.154 h1:KjANxRCBivomtq2iOh8R2KtShZJ6sI6IvzrVf0uoy4g=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.3.154/go.mod h1:6Gn0gEsdr7IvmHPqxWd5jzSVzFYND56RO8wPYXqO8NI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.3.131 h1:YfzhVkH30GipMEOGIx6nkaJv2E/mWN+G6Vvg+M7SqGg=
