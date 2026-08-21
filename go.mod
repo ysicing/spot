@@ -11,7 +11,7 @@ require (
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.3.161
-	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.3.154
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cvm v1.3.159
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/dnspod v1.3.131
 )
 
