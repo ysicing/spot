@@ -37,6 +37,10 @@ type Image struct {
 	OsName           string
 }
 
+type imageClient interface {
+	DescribeImages(*cvm.DescribeImagesRequest) (*cvm.DescribeImagesResponse, error)
+}
+
 func (c *Client) Create(count int64, netaccess, windows bool, image string) error {
 
 	// 实例化一个请求对象,每个接口都会对应一个request对象
@@ -438,47 +442,80 @@ func (c *Client) Restart(id string) error {
 }
 
 func (c *Client) ImageList(notPublic bool) ([]Image, error) {
+	return listImages(c.cvmCliet, notPublic)
+}
+
+func listImages(client imageClient, notPublic bool) ([]Image, error) {
 	request := cvm.NewDescribeImagesRequest()
 	request.Offset = common.Uint64Ptr(0)
 	request.Limit = common.Uint64Ptr(100)
 	imageList := make([]Image, 0)
 	totalCount := uint64(100)
 	for *request.Offset < totalCount {
-		response, err := c.cvmCliet.DescribeImages(request)
+		response, err := client.DescribeImages(request)
 		if err != nil {
 			return nil, err
 		}
-		if response.Response.ImageSet != nil && len(response.Response.ImageSet) > 0 {
-			for _, i := range response.Response.ImageSet {
-				if notPublic && *i.ImageType == "PUBLIC_IMAGE" {
+		if response == nil || response.Response == nil {
+			return nil, fmt.Errorf("invalid image response: missing response body")
+		}
+		if response.Response.TotalCount == nil {
+			return nil, fmt.Errorf("invalid image response: missing total count")
+		}
+		totalCountValue := *response.Response.TotalCount
+		// 腾讯云返回值是有符号整数，转换前拒绝负数，避免异常响应变成超大无符号数。
+		if totalCountValue < 0 {
+			return nil, fmt.Errorf("invalid image total count: %d", totalCountValue)
+		}
+		totalCount = uint64(totalCountValue)
+		if len(response.Response.ImageSet) == 0 {
+			if *request.Offset < totalCount {
+				return nil, fmt.Errorf("invalid image response: empty page at offset %d of %d", *request.Offset, totalCount)
+			}
+			break
+		}
+		for index, i := range response.Response.ImageSet {
+			if i == nil || i.ImageId == nil || i.ImageType == nil {
+				return nil, fmt.Errorf("invalid image response: image %d is missing required fields", index)
+			}
+			imageType := "未知"
+			switch *i.ImageType {
+			case "PUBLIC_IMAGE":
+				if notPublic {
 					continue
 				}
-				imageType := ""
-				imageState := color.SGreen("正常")
+				imageType = "官方"
+			case "PRIVATE_IMAGE":
+				imageType = "自定义镜像"
+			case "SHARED_IMAGE":
+				imageType = "共享镜像"
+			}
+			imageState := "未知"
+			if i.ImageState != nil {
+				imageState = color.SGreen("正常")
 				if *i.ImageState != "NORMAL" {
 					imageState = *i.ImageState
 				}
-				if *i.ImageType == "PUBLIC_IMAGE" {
-					imageType = "官方"
-				} else if *i.ImageType == "PRIVATE_IMAGE" {
-					imageType = "自定义镜像"
-				} else {
-					imageType = "共享镜像"
-				}
-				imageList = append(imageList, Image{
-					ImageID:          *i.ImageId,
-					ImageName:        *i.ImageName,
-					ImageState:       imageState,
-					ImageType:        imageType,
-					ImageDescription: *i.ImageDescription,
-					OsName:           *i.OsName,
-				})
 			}
+			imageList = append(imageList, Image{
+				ImageID:          *i.ImageId,
+				ImageName:        stringValue(i.ImageName),
+				ImageState:       imageState,
+				ImageType:        imageType,
+				ImageDescription: stringValue(i.ImageDescription),
+				OsName:           stringValue(i.OsName),
+			})
 		}
-		totalCount = uint64(*response.Response.TotalCount)
 		request.Offset = common.Uint64Ptr(*request.Offset + uint64(len(response.Response.ImageSet)))
 	}
 	return imageList, nil
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }
 
 func (c *Client) ImageShow(notPublic bool) error {

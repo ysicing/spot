@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"github.com/ysicing/spot/cloud/qcloud"
+
 	"github.com/manifoldco/promptui"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/ysicing/spot/cloud/qcloud"
 )
 
 type Action struct {
@@ -67,7 +68,7 @@ func cmdImagManage() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if images[i].ImageType != "官方" {
+			if canDeleteImage(images[i].ImageType) {
 				actionPrompt := promptui.Select{
 					Label: "操作",
 					Items: action,
@@ -95,4 +96,8 @@ func cmdImagManage() *cobra.Command {
 	c.Flags().BoolVar(&notPublic, "skip-public", true, "忽略官方镜像")
 	c.Flags().BoolVar(&netaccess, "net", true, "是否开启公网访问, 单节点生效")
 	return c
+}
+
+func canDeleteImage(imageType string) bool {
+	return imageType == "自定义镜像" || imageType == "共享镜像"
 }

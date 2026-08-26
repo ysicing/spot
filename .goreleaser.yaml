@@ -1,5 +1,6 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
+# GoReleaser v2 配置。
+version: 2
+
 before:
   hooks:
     # You may remove this if you don't use go modules.
@@ -14,7 +15,8 @@ builds:
       - linux
     hooks:
       post:
-        - upx -9 -f -q "{{ .Path }}"
+        # UPX 仅用于压缩 Linux 二进制；本地或 CI 未安装时不阻断快照构建。
+        - sh -c 'if command -v upx >/dev/null 2>&1; then upx -9 -f -q "$1"; fi' -- "{{ .Path }}"
   - id: other
     env:
       - CGO_ENABLED=0
@@ -25,12 +27,11 @@ builds:
       - windows
       - darwin
 archives:
-  - format: binary
+  - formats:
+      - binary
     name_template: "spot_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
 checksum:
   name_template: 'checksums.txt'
-snapshot:
-  name_template: "{{ incpatch .Version }}-next"
 nfpms:
 - file_name_template: 'spot_{{ .Tag }}_{{ .Os }}_{{ .Arch }}'
   homepage: https://github.com/ysicing/spot
